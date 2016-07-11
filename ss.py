@@ -34,6 +34,8 @@ if __name__ == "__main__":
 
     is_solving = True
     moves_stack = []
+    guess_ct = 0
+    backtrack_ct = 0
 
     print "THE PUZZLE:"
     print_puzzle()
@@ -85,7 +87,7 @@ if __name__ == "__main__":
                         row, col, val, guesses = moves_stack.pop()
                         if len(guesses):
                             # found a move that was a guess
-                            # so apply next value in solution set as a new guess
+                            # so apply next value in square's solution set as a new guess
                             new_val = guesses.pop()
                             puzzle[row][col] = new_val
                             moves_stack.append((row, col, new_val, guesses))
@@ -95,8 +97,9 @@ if __name__ == "__main__":
                             # the move has no more guesses associated with it
                             # so just undo the move
                             puzzle[row][col] = 0
+                            backtrack_ct += 1
                     # the above loop should have found a guess and cleared this flag
-                    # if it didn't then the puzzle had no solution (I think)
+                    # if it didn't then the puzzle has no solution (I think)
                     if is_guess_needed:
                         print "WTF?"
                         sys.exit(1)
@@ -104,28 +107,35 @@ if __name__ == "__main__":
                 elif len(square_solution) == 1:
                     # this is a unique solution for a square
                     # update puzzle and add to stack
-                    # break and begin next iteration
+                    # break and begin next iteration since
+                    # the row, col, box sets need to be reevaluated
                     val = square_solution.pop()
                     puzzle[row][col] = val
                     moves_stack.append((row, col, val, set([])))
                     is_guess_needed = False
                     break
                 else:
-                    # multiple solutions for this square
-                    # add it to collection of guesses
+                    # there are multiple solutions for this square
+                    # add its solution set to collection of guesses
                     new_guesses.append((row, col, square_solution))
 
         if is_guess_needed:
-            # the following operations did not make any progress
-            # sort guesses so those with fewest number of choices are first
+            # the previous constraint check did not make any progress
+            # so a guess must be made to continue checking solutions
+            # first sort guess list by fewest number of guess choices
             new_guesses.sort(key=lambda x: len(x[2]))
 
-            # find guess that hasn't been made
-            # eventually the guesses will get used up
+            # each guess set is guaranteed to have a correct choice
+            # so just apply the first choice from first guess in list
+            # eventually incorrect guesses will get used up
+            # as constraint check reveals contradictions
             row, col, guesses = new_guesses[0]
             val = guesses.pop()
             puzzle[row][col] = val
             moves_stack.append((row, col, val, guesses))
+            guess_ct += 1
 
     print "SOLUTION:"
     print_puzzle()
+    print "Guesses:    ", guess_ct
+    print "Backtracks: ", backtrack_ct
