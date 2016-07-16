@@ -2,7 +2,7 @@ import sys
 
 
 # Daily Sudoku:  Sat 9-Jul-2016
-puzzle = [[0, 0, 7, 0, 0, 5, 9, 6, 0],
+puzz00 = [[0, 0, 7, 0, 0, 5, 9, 6, 0],
           [0, 0, 0, 0, 0, 0, 0, 1, 5],
           [0, 3, 0, 0, 7, 0, 0, 0, 4],
 
@@ -13,6 +13,21 @@ puzzle = [[0, 0, 7, 0, 0, 5, 9, 6, 0],
           [8, 0, 0, 0, 6, 0, 0, 9, 0],
           [2, 7, 0, 0, 0, 0, 0, 0, 0],
           [0, 4, 9, 3, 0, 0, 1, 0, 0]]
+
+# Daily Sudoku:  Sat 16-Jul-2016
+puzz01 = [[0, 0, 7, 9, 0, 0, 0, 0, 4],
+          [0, 2, 0, 6, 0, 8, 0, 7, 0],
+          [0, 0, 8, 0, 0, 7, 0, 0, 0],
+
+          [0, 0, 1, 0, 0, 0, 0, 0, 3],
+          [0, 8, 0, 4, 0, 9, 0, 2, 0],
+          [4, 0, 0, 0, 0, 0, 1, 0, 0],
+
+          [0, 0, 0, 7, 0, 0, 6, 0, 0],
+          [0, 9, 0, 2, 0, 3, 0, 1, 0],
+          [3, 0, 0, 0, 0, 4, 5, 0, 0]]
+
+puzzle = puzz01
 
 
 def print_puzzle():
@@ -30,12 +45,31 @@ def print_puzzle():
     print "-------------------------"
 
 
+def get_indexes(_square):
+    """
+    Returns row, column, and box indexes for a square.
+    Indexing is 0-based and goes left-to-right and top-to-bottom.
+    0 is the top-left square index, 80 is the bottom-right square index.
+    Rows are numbered 0-8 from the top-to-bottom.
+    Columns are numbered 0-8 from left-to-right.
+    0 is the top-left box index, 8 is the bottom-right box index.
+
+    :param _square: 0-based square index
+    :return: (0-based row index, 0-based column index, 0-based box index)
+    """
+    _row = _square / 9
+    _col = _square % 9
+    _box = (_col / 3) + ((_row / 3) * 3)
+    return _row, _col, _box
+
+
 if __name__ == "__main__":
 
     is_solving = True
     moves_stack = []
     guess_ct = 0
     backtrack_ct = 0
+    choice_max_ct = 0
 
     print "THE PUZZLE:"
     print_puzzle()
@@ -51,12 +85,11 @@ if __name__ == "__main__":
         # and also count how many squares are solved
         solved_ct = 0
         for square in range(81):
-            row = square / 9
-            col = square % 9
-            box_id = (col / 3) + ((row / 3) * 3)
+            row, col, box = get_indexes(square)
             elem = puzzle[row][col]
             if elem != 0:
-                nbox[box_id].remove(elem)
+                # TODO -- maybe handle error here if box data is bad
+                nbox[box].remove(elem)
                 nrow[row].remove(elem)
                 ncol[col].remove(elem)
                 solved_ct += 1
@@ -70,14 +103,12 @@ if __name__ == "__main__":
         new_guesses = []
         is_guess_needed = True
         for square in range(81):
-            row = square / 9
-            col = square % 9
-            box_id = (col / 3) + ((row / 3) * 3)
+            row, col, box = get_indexes(square)
             elem = puzzle[row][col]
             if elem == 0:
                 # this is an unsolved square so find potential solutions
                 # solution is intersection of !box and !row and !col
-                square_solution = nbox[box_id] & nrow[row] & ncol[col]
+                square_solution = nbox[box] & nrow[row] & ncol[col]
                 if len(square_solution) == 0:
                     # solution set is empty
                     # this is a contradiction so a guess was incorrect
@@ -135,7 +166,12 @@ if __name__ == "__main__":
             moves_stack.append((row, col, val, guesses))
             guess_ct += 1
 
+            # update maximum number of choices used for a guess
+            if len(new_guesses[0]) > choice_max_ct:
+                choice_max_ct = len(new_guesses[0])
+
     print "SOLUTION:"
     print_puzzle()
-    print "Guesses:    ", guess_ct
-    print "Backtracks: ", backtrack_ct
+    print "Guesses:     ", guess_ct
+    print "Backtracks:  ", backtrack_ct
+    print "Max Choices: ", choice_max_ct
