@@ -7,7 +7,7 @@
     <StartupFile>ss.py</StartupFile>
     <SearchPath>
     </SearchPath>
-    <WorkingDirectory>..</WorkingDirectory>
+    <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>ss_vs2019</Name>
     <RootNamespace>ss_vs2019</RootNamespace>
