@@ -1,6 +1,8 @@
+#!/usr/bin/env python
+
 import sys
 
-# Daily Sudoku:  Sat 9-Jul-2016
+# blank for testing
 puzzXX = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
           [0, 0, 0, 0, 0, 0, 0, 0, 0],
           [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -71,16 +73,16 @@ puzzle = puzz03
 def print_puzzle():
     for i in range(9):
         if i % 3 == 0:
-            print "-------------------------"
+            print("-------------------------")
         for j in range(9):
             if j % 3 == 0:
-                print "|",
+                print("|", end=' ')
             if puzzle[i][j] == 0:
-                print "_",
+                print("_", end = ' ')
             else:
-                print puzzle[i][j],
-        print "|"
-    print "-------------------------"
+                print(puzzle[i][j], end=' ')
+        print("|")
+    print("-------------------------")
 
 
 def get_indexes(_square):
@@ -95,9 +97,9 @@ def get_indexes(_square):
     :param _square: 0-based square index
     :return: (0-based row index, 0-based column index, 0-based box index)
     """
-    _row = _square / 9
+    _row = _square // 9
     _col = _square % 9
-    _box = (_col / 3) + ((_row / 3) * 3)
+    _box = (_col // 3) + ((_row // 3) * 3)
     return _row, _col, _box
 
 
@@ -109,7 +111,7 @@ if __name__ == "__main__":
     backtrack_ct = 0
     choice_max_ct = 0
 
-    print "THE PUZZLE:"
+    print("THE PUZZLE:")
     print_puzzle()
 
     while is_solving:
@@ -170,7 +172,7 @@ if __name__ == "__main__":
                     # the above loop should have found a guess and cleared this flag
                     # if it didn't then the puzzle has no solution (I think)
                     if is_guess_needed:
-                        print "WTF?"
+                        print("WTF?")
                         sys.exit(1)
                     break
                 elif len(square_solution) == 1:
@@ -208,8 +210,8 @@ if __name__ == "__main__":
             if len(new_guesses[0]) > choice_max_ct:
                 choice_max_ct = len(new_guesses[0])
 
-    print "SOLUTION:"
+    print("SOLUTION:")
     print_puzzle()
-    print "Guesses:     ", guess_ct
-    print "Backtracks:  ", backtrack_ct
-    print "Max Choices: ", choice_max_ct
+    print(f"Guesses:      {guess_ct}")
+    print(f"Backtracks:   {backtrack_ct}")
+    print(f"Max Choices:  {choice_max_ct}")
