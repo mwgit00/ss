@@ -142,6 +142,12 @@ def get_indexes(_square):
     return _row, _col, _box
 
 
+def update_history(_f, _label, _row, _col, _val, _stack):
+    nn = len(_stack)
+    s = f"{_label},{_row},{_col},{_val},{nn}\n"
+    _f.write(s)
+
+
 if __name__ == "__main__":
 
     is_solving = True
@@ -149,6 +155,11 @@ if __name__ == "__main__":
     guess_ct = 0
     backtrack_ct = 0
     choice_max_ct = 0
+
+    outf = open('foo.txt', 'w')
+
+    for row in puzzle:
+        outf.write(','.join(str(elem) for elem in row) + '\n')
 
     print("THE PUZZLE:")
     print_puzzle()
@@ -202,12 +213,14 @@ if __name__ == "__main__":
                             puzzle[row][col] = new_val
                             moves_stack.append((row, col, new_val, guesses))
                             is_guess_needed = False
+                            update_history(outf, 'N', row, col, new_val, moves_stack)
                             break
                         else:
                             # the move has no more guesses associated with it
                             # so just undo the move
                             puzzle[row][col] = 0
                             backtrack_ct += 1
+                            update_history(outf, 'B', row, col, 0, moves_stack)
                     # the above loop should have found a guess and cleared this flag
                     # if it didn't then the puzzle has no solution (I think)
                     if is_guess_needed:
@@ -223,6 +236,7 @@ if __name__ == "__main__":
                     puzzle[row][col] = val
                     moves_stack.append((row, col, val, set([])))
                     is_guess_needed = False
+                    update_history(outf, 'U', row, col, val, moves_stack)
                     break
                 else:
                     # there are multiple solutions for this square
@@ -245,6 +259,8 @@ if __name__ == "__main__":
             moves_stack.append((row, col, val, guesses))
             guess_ct += 1
 
+            update_history(outf, 'G', row, col, val, moves_stack)
+
             # update maximum number of choices used for a guess
             if len(new_guesses[0]) > choice_max_ct:
                 choice_max_ct = len(new_guesses[0])
@@ -254,3 +270,8 @@ if __name__ == "__main__":
     print(f"Guesses:      {guess_ct}")
     print(f"Backtracks:   {backtrack_ct}")
     print(f"Max Choices:  {choice_max_ct}")
+
+    for row in puzzle:
+        outf.write(','.join(str(elem) for elem in row) + '\n')
+
+    outf.close()
