@@ -184,10 +184,8 @@ void render_puzzle_step(cv::Mat& rimg, const T_PUZZ_STEP& rz)
     {
         for (ii = 0; ii < 9; ii++)
         {
-            std::ostringstream oss;
             int num = _puzznum[jj][ii];
             char tag = _puzztag[jj][ii];
-            oss << num;
             cv::rectangle(rimg, { ii * k1, jj * k1, k1, k1 }, SCA_BLACK, 1);
             if (num != 0)
             {
@@ -195,7 +193,8 @@ void render_puzzle_step(cv::Mat& rimg, const T_PUZZ_STEP& rz)
                 switch (tag)
                 {
                     case 'G':
-                        // guessed square
+                    case 'N':
+                        // guessed (or next guess) square
                         sca = SCA_MAGENTA;
                         break;
                     case 'U':
@@ -207,6 +206,8 @@ void render_puzzle_step(cv::Mat& rimg, const T_PUZZ_STEP& rz)
                         sca = SCA_BLACK;
                         break;
                 }
+                std::ostringstream oss;
+                oss << num;
                 putText(rimg, oss.str(),
                     { (ii * k1) + kii, (jj * k1) + kjj },
                     cv::FONT_HERSHEY_PLAIN, fscale, sca, 3);
@@ -224,15 +225,22 @@ int main()
     cv::Mat img;
     tVecStr vpuzz;
     tVecStr vs;
+    int nn = 0;
+    int reps = 60;
 
     read_file("C:\\work\\ss\\ss_vs2019\\solution1.txt", vs);
     parse_solution(vs);
 
-    // initial puzzle
-    render_puzzle_step(img, { 0 });
-    cv::imwrite("foo0000.png", img);
+    for (int ii = 0; ii < reps; ii++)
+    {
+        // render initial puzzle
+        std::ostringstream oss;
+        oss << "foo" << std::setw(4) << std::setfill('0') << nn << ".png";
+        render_puzzle_step(img, { 0 });
+        cv::imwrite(oss.str(), img);
+        nn++;
+    }
 
-    int nn = 1;
     for (const auto& rz : _vzz)
     {
         // render all steps
@@ -243,10 +251,13 @@ int main()
         nn++;
     }
 
+    // clear tags so all squares are black again
+    memset(_puzztag, 0, sizeof(_puzztag));
+
+    for (int ii = 0; ii < reps; ii++)
     {
         // render final solved puzzle
         std::ostringstream oss;
-        memset(_puzztag, 0, sizeof(_puzztag));
         oss << "foo" << std::setw(4) << std::setfill('0') << nn << ".png";
         render_puzzle_step(img, { 0 });
         cv::imwrite(oss.str(), img);
