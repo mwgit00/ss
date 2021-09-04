@@ -57,10 +57,12 @@ static char _puzztag[9][9];
 static tVecPuzzStep _vzz;
 
 
-void read_file(const std::string& rs, tVecStr& rvec)
+bool read_file(const std::string& rs, tVecStr& rvec)
 {
+    bool is_ok = false;
     std::ifstream ifs;
     ifs.open(rs);
+
     if (ifs.is_open())
     {
         std::string ss;
@@ -69,8 +71,12 @@ void read_file(const std::string& rs, tVecStr& rvec)
             rvec.push_back(ss);
         }
         ifs.close();
+        is_ok = true;
     }
+
+    return is_ok;
 }
+
 
 void parse_solution(tVecStr& rvec)
 {
@@ -218,50 +224,67 @@ void render_puzzle_step(cv::Mat& rimg, const T_PUZZ_STEP& rz)
 
 
 
-int main()
+int main(int argc, char * argv[])
 {
-    std::cout << "Sudoku Solution Visualizer\n";
-
+    std::string sname;
     cv::Mat img;
     tVecStr vpuzz;
     tVecStr vs;
     int nn = 0;
-    int reps = 60;
+    int reps = 30;
 
-    read_file("C:\\work\\ss\\ss_vs2019\\solution1.txt", vs);
-    parse_solution(vs);
+    std::cout << "Sudoku Solution Visualizer" << std::endl;
 
-    for (int ii = 0; ii < reps; ii++)
+    if (argc != 2)
     {
-        // render initial puzzle
-        std::ostringstream oss;
-        oss << "foo" << std::setw(4) << std::setfill('0') << nn << ".png";
-        render_puzzle_step(img, { 0 });
-        cv::imwrite(oss.str(), img);
-        nn++;
+        std::cout << "Missing path to solution TXT file!" << std::endl;
+        return 0;
     }
 
-    for (const auto& rz : _vzz)
+    sname = std::string(argv[1]);
+
+    if (!read_file(sname, vs))
     {
-        // render all steps
-        std::ostringstream oss;
-        oss << "foo" << std::setw(4) << std::setfill('0') << nn << ".png";
-        render_puzzle_step(img, rz);
-        cv::imwrite(oss.str(), img);
-        nn++;
+        std::cout << "File not found:  " << sname << std::endl;
+        return 0;
     }
-
-    // clear tags so all squares are black again
-    memset(_puzztag, 0, sizeof(_puzztag));
-
-    for (int ii = 0; ii < reps; ii++)
+    else
     {
-        // render final solved puzzle
-        std::ostringstream oss;
-        oss << "foo" << std::setw(4) << std::setfill('0') << nn << ".png";
-        render_puzzle_step(img, { 0 });
-        cv::imwrite(oss.str(), img);
-        nn++;
+        parse_solution(vs);
+        std::cout << vs.size() << " moves" << std::endl;
+
+        for (int ii = 0; ii < reps; ii++)
+        {
+            // render initial puzzle
+            std::ostringstream oss;
+            oss << "foo" << std::setw(4) << std::setfill('0') << nn << ".png";
+            render_puzzle_step(img, { 0 });
+            cv::imwrite(oss.str(), img);
+            nn++;
+        }
+
+        for (const auto& rz : _vzz)
+        {
+            // render all steps
+            std::ostringstream oss;
+            oss << "foo" << std::setw(4) << std::setfill('0') << nn << ".png";
+            render_puzzle_step(img, rz);
+            cv::imwrite(oss.str(), img);
+            nn++;
+        }
+
+        // clear tags so all squares are black again
+        memset(_puzztag, 0, sizeof(_puzztag));
+
+        for (int ii = 0; ii < reps; ii++)
+        {
+            // render final solved puzzle
+            std::ostringstream oss;
+            oss << "foo" << std::setw(4) << std::setfill('0') << nn << ".png";
+            render_puzzle_step(img, { 0 });
+            cv::imwrite(oss.str(), img);
+            nn++;
+        }
     }
 
     return 0;
